@@ -243,7 +243,7 @@ function PureMultimodalInput({
   }, [status, scrollToBottom]);
 
   return (
-    <div className="flex relative flex-col gap-4 w-full">
+    <div className="relative flex w-full flex-col gap-4">
       <AnimatePresence>
         {!isAtBottom && (
           <motion.div
@@ -251,7 +251,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="absolute -top-12 left-1/2 z-50 -translate-x-1/2"
+            className="-top-12 -translate-x-1/2 absolute left-1/2 z-50"
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -289,7 +289,7 @@ function PureMultimodalInput({
       />
 
       <PromptInput
-        className="p-3 rounded-xl border transition-all duration-200 border-border bg-background shadow-xs focus-within:border-border hover:border-muted-foreground/50"
+        className="rounded-xl border border-border bg-background p-3 shadow-xs transition-all duration-200 focus-within:border-border hover:border-muted-foreground/50"
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== 'ready') {
@@ -302,7 +302,7 @@ function PureMultimodalInput({
         {(attachments.length > 0 || uploadQueue.length > 0) && (
           <div
             data-testid="attachments-preview"
-            className="flex overflow-x-scroll flex-row gap-2 items-end"
+            className="flex flex-row items-end gap-2 overflow-x-scroll"
           >
             {attachments.map((attachment) => (
               <PreviewAttachment
@@ -332,7 +332,7 @@ function PureMultimodalInput({
             ))}
           </div>
         )}
-        <div className="flex flex-row gap-1 items-start sm:gap-2">
+        <div className="flex flex-row items-start gap-1 sm:gap-2">
           <PromptInputTextarea
             data-testid="multimodal-input"
             ref={textareaRef}
@@ -342,7 +342,7 @@ function PureMultimodalInput({
             minHeight={44}
             maxHeight={200}
             disableAutoResize={true}
-            className="grow resize-none border-0! p-2 border-none! bg-transparent text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
+            className="grow resize-none border-0! border-none! bg-transparent p-2 text-sm outline-none ring-0 [-ms-overflow-style:none] [scrollbar-width:none] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 [&::-webkit-scrollbar]:hidden"
             rows={1}
             autoFocus
           />{' '}
@@ -355,7 +355,10 @@ function PureMultimodalInput({
               status={status}
               selectedModelId={selectedModelId}
             />
-            <ModelSelectorCompact selectedModelId={selectedModelId} onModelChange={onModelChange} />
+            <ModelSelectorCompact
+              selectedModelId={selectedModelId}
+              onModelChange={onModelChange}
+            />
           </PromptInputTools>
 
           {status === 'submitted' ? (
@@ -364,7 +367,7 @@ function PureMultimodalInput({
             <PromptInputSubmit
               status={status}
               disabled={!input.trim() || uploadQueue.length > 0}
-              className="rounded-full transition-colors duration-200 size-8 bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
             >
               <ArrowUpIcon size={14} />
             </PromptInputSubmit>
@@ -401,18 +404,19 @@ function PureAttachmentsButton({
   const isReasoningModel = selectedModelId === 'chat-model-reasoning';
 
   return (
-    <Button
-      data-testid="attachments-button"
-      className="p-1 h-8 rounded-lg transition-colors aspect-square hover:bg-accent"
-      onClick={(event) => {
-        event.preventDefault();
-        fileInputRef.current?.click();
-      }}
-      disabled={status !== 'ready' || isReasoningModel}
-      variant="ghost"
-    >
-      <PaperclipIcon size={14} style={{ width: 14, height: 14 }} />
-    </Button>
+    // <Button
+    //   data-testid="attachments-button"
+    //   className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
+    //   onClick={(event) => {
+    //     event.preventDefault();
+    //     fileInputRef.current?.click();
+    //   }}
+    //   disabled={status !== 'ready' || isReasoningModel}
+    //   variant="ghost"
+    // >
+    //   <PaperclipIcon size={14} style={{ width: 14, height: 14 }} />
+    // </Button>
+    <></>
   );
 }
 
@@ -436,48 +440,49 @@ function PureModelSelectorCompact({
   );
 
   return (
-    <PromptInputModelSelect
-      value={selectedModel?.name}
-      onValueChange={(modelName) => {
-        const model = chatModels.find((m) => m.name === modelName);
-        if (model) {
-          setOptimisticModelId(model.id);
-          onModelChange?.(model.id);
-          startTransition(() => {
-            saveChatModelAsCookie(model.id);
-          });
-        }
-      }}
-    >
-      <SelectPrimitive.Trigger
-        type="button"
-        className="flex gap-2 items-center px-2 h-8 rounded-lg border-0 shadow-none transition-colors bg-background text-foreground hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-      >
-        <CpuIcon size={16} />
-        <span className="hidden text-xs font-medium sm:block">
-          {selectedModel?.name}
-        </span>
-        <ChevronDownIcon size={16} />
-      </SelectPrimitive.Trigger>
-      <PromptInputModelSelectContent className="min-w-[260px] p-0">
-        <div className="flex flex-col gap-px">
-          {chatModels.map((model) => (
-            <SelectItem
-              key={model.id}
-              value={model.name}
-              className="px-3 py-2 text-xs"
-            >
-              <div className="flex flex-col flex-1 gap-1 min-w-0">
-                <div className="text-xs font-medium truncate">{model.name}</div>
-                <div className="text-[10px] text-muted-foreground truncate leading-tight">
-                  {model.description}
-                </div>
-              </div>
-            </SelectItem>
-          ))}
-        </div>
-      </PromptInputModelSelectContent>
-    </PromptInputModelSelect>
+    // <PromptInputModelSelect
+    //   value={selectedModel?.name}
+    //   onValueChange={(modelName) => {
+    //     const model = chatModels.find((m) => m.name === modelName);
+    //     if (model) {
+    //       setOptimisticModelId(model.id);
+    //       onModelChange?.(model.id);
+    //       startTransition(() => {
+    //         saveChatModelAsCookie(model.id);
+    //       });
+    //     }
+    //   }}
+    // >
+    //   {/* <SelectPrimitive.Trigger
+    //     type="button"
+    //     className="flex h-8 items-center gap-2 rounded-lg border-0 bg-background px-2 text-foreground shadow-none transition-colors hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+    //   >
+    //     <CpuIcon size={16} />
+    //     <span className="hidden font-medium text-xs sm:block">
+    //       {selectedModel?.name}
+    //     </span>
+    //     <ChevronDownIcon size={16} />
+    //   </SelectPrimitive.Trigger> */}
+    //   <PromptInputModelSelectContent className="min-w-[260px] p-0">
+    //     <div className="flex flex-col gap-px">
+    //       {chatModels.map((model) => (
+    //         <SelectItem
+    //           key={model.id}
+    //           value={model.name}
+    //           className="px-3 py-2 text-xs"
+    //         >
+    //           <div className="flex min-w-0 flex-1 flex-col gap-1">
+    //             <div className="truncate font-medium text-xs">{model.name}</div>
+    //             <div className="truncate text-[10px] text-muted-foreground leading-tight">
+    //               {model.description}
+    //             </div>
+    //           </div>
+    //         </SelectItem>
+    //       ))}
+    //     </div>
+    //   </PromptInputModelSelectContent>
+    // </PromptInputModelSelect>
+    <></>
   );
 }
 
@@ -493,7 +498,7 @@ function PureStopButton({
   return (
     <Button
       data-testid="stop-button"
-      className="p-1 rounded-full transition-colors duration-200 size-7 bg-foreground text-background hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
+      className="size-7 rounded-full bg-foreground p-1 text-background transition-colors duration-200 hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground"
       onClick={(event) => {
         event.preventDefault();
         stop();

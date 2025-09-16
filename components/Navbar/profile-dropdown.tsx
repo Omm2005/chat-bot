@@ -3,20 +3,15 @@
 import React, { useState } from 'react';
 import {
   Bug,
-  ChevronUp,
   Eye,
   EyeClosed,
   Github,
   Instagram,
   Loader2,
+  LogIn,
+  LogOut,
   X,
-  LogInIcon,
 } from 'lucide-react';
-import type { User } from 'next-auth';
-import { signOut, useSession } from 'next-auth/react';
-import { useTheme } from 'next-themes';
-import Link from 'next/link';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,27 +19,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { LoaderIcon } from './icons';
-import { guestRegex } from '@/lib/constants';
-import ThemeSwitcher from '@/components/Navbar/theme-switcher';
+import { redirect, useRouter } from 'next/navigation';
+import ThemeSwitcher from './theme-switcher';
+import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 
-export function SidebarUserNav({ user }: { user: User }) {
-  const router = useRouter();
-  const { data, status } = useSession();
-  const { setTheme, resolvedTheme } = useTheme();
+type Props = {
+  user?: {
+    id: string;
+    name: string;
+    image: string;
+    email: string;
+    createdAt: Date;
+  };
+};
+
+export default function ProfileDropdown({ user }: Props) {
   const [showEmail, setShowEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const isGuest = guestRegex.test(data?.user?.email ?? '');
+  const router = useRouter();
 
   // Function to format email for display
   const formatEmail = (email?: string | null) => {
@@ -67,38 +68,18 @@ export function SidebarUserNav({ user }: { user: User }) {
     // Fallback for unusual email formats
     return `${email.slice(0, 3)}•••`;
   };
-
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
+    <>
+      {user?.name && user.image ? (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            {status === 'loading' ? (
-              <SidebarMenuButton className="h-10 justify-between bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                <div className="flex flex-row gap-2">
-                  <div className="size-6 animate-pulse rounded-full bg-zinc-500/30" />
-                  <span className="animate-pulse rounded-md bg-zinc-500/30 text-transparent">
-                    Loading auth status
-                  </span>
-                </div>
-                <div className="animate-spin text-zinc-500">
-                  <LoaderIcon />
-                </div>
-              </SidebarMenuButton>
-            ) : (
-              <SidebarMenuButton
-                data-testid="user-nav-button"
-                className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              >
-                <Avatar className="size-6 rounded-full border border-neutral-200 dark:border-neutral-700">
-                  <AvatarImage
-                    src={user.image || `https://avatar.vercel.sh/${user.email}`}
-                    alt={user.name || user.email || 'User Avatar'}
-                  />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="!p-0 !m-0 size-7 rounded-full border border-neutral-200 dark:border-neutral-700">
+                  <AvatarImage src={user.image} alt={user.name} />
                   <AvatarFallback>
                     {(() => {
-                      const name = user.name || user.email || '';
-                      const words = name.split(' ');
+                      const words = user.name.split(' ');
                       const firstInitial = words[0]?.[0] || '';
                       const secondInitial =
                         words.length > 1 ? words[1]?.[0] || '' : '';
@@ -109,30 +90,24 @@ export function SidebarUserNav({ user }: { user: User }) {
                     })()}
                   </AvatarFallback>
                 </Avatar>
-                <span data-testid="user-email" className="truncate">
-                  {isGuest ? 'Guest' : user.name || formatEmail(user.email)}
-                </span>
-                <ChevronUp className="ml-auto" />
-              </SidebarMenuButton>
-            )}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            data-testid="user-nav-menu"
-            side="top"
-            className="z-[110] w-[260px] border-0 p-1.5"
-          >
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={4} align="end">
+              Account
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent className="z-[110] mr-5 w-[260px] border-0 p-1.5">
             <div className="p-3">
               <div className="flex items-center gap-2">
                 <Avatar className="size-10 shrink-0 rounded-full border-neutral-200 dark:border-neutral-700">
                   <AvatarImage
-                    src={user.image || `https://avatar.vercel.sh/${user.email}`}
-                    alt={user.name || user.email || 'User Avatar'}
+                    src={user.image}
+                    alt={user.name}
                     className="m-0 size-10 rounded-full p-0"
                   />
                   <AvatarFallback className="m-0 size-10 rounded-full p-0">
                     {(() => {
-                      const name = user.name || user.email || '';
-                      const words = name.split(' ');
+                      const words = user.name.split(' ');
                       const firstInitial = words[0]?.[0] || '';
                       const secondInitial =
                         words.length > 1 ? words[1]?.[0] || '' : '';
@@ -145,35 +120,29 @@ export function SidebarUserNav({ user }: { user: User }) {
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
                   <p className="truncate font-medium text-sm leading-none">
-                    {user.name || (isGuest ? 'Guest' : 'User')}
+                    {user.name}
                   </p>
                   <div className="mt-0.5 flex items-center gap-1">
                     <div
                       className={`text-muted-foreground text-xs ${showEmail ? '' : 'max-w-[160px] truncate'}`}
-                      title={user.email ?? undefined}
+                      title={user.email}
                     >
-                      {isGuest ? 'Guest Account' : formatEmail(user.email)}
+                      {formatEmail(user.email)}
                     </div>
-                    {!isGuest && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowEmail(!showEmail);
-                        }}
-                        className="size-6 text-muted-foreground hover:text-foreground"
-                      >
-                        {showEmail ? (
-                          <EyeClosed size={12} />
-                        ) : (
-                          <Eye size={12} />
-                        )}
-                        <span className="sr-only">
-                          {showEmail ? 'Hide email' : 'Show email'}
-                        </span>
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowEmail(!showEmail);
+                      }}
+                      className="size-6 text-muted-foreground hover:text-foreground"
+                    >
+                      {showEmail ? <EyeClosed size={12} /> : <Eye size={12} />}
+                      <span className="sr-only">
+                        {showEmail ? 'Hide email' : 'Show email'}
+                      </span>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -233,15 +202,11 @@ export function SidebarUserNav({ user }: { user: User }) {
               onClick={async () => {
                 try {
                   setIsLoading(true);
-                  if (isGuest) {
-                    router.push('/login');
-                  } else {
-                    await signOut({
-                      redirectTo: '/',
-                    });
-                  }
+                  await signOut({
+                    redirectTo: '/',
+                  });
                 } catch (error) {
-                  toast.error('An unexpected error occurred');
+                  toast.error('An Unexpected error occured');
                 } finally {
                   setIsLoading(false);
                   router.refresh();
@@ -251,13 +216,25 @@ export function SidebarUserNav({ user }: { user: User }) {
               {isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
-                <LogInIcon className="size-4" />
+                <LogOut className="size-4" />
               )}
-              <span>{isGuest ? 'Login to your account' : 'Sign out'}</span>
+              <span>Log Out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+      ) : (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="px-3 py-1.5 text-accent-foreground text-sm"
+          onClick={() => {
+            redirect('/login');
+          }}
+        >
+          <LogIn className="mr-2 size-4" />
+          Sign In
+        </Button>
+      )}
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -23,7 +24,6 @@ import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
-import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
@@ -43,6 +43,7 @@ import { fetchModels } from 'tokenlens/fetch';
 import { getUsage } from 'tokenlens/helpers';
 import type { ModelCatalog } from 'tokenlens/core';
 import type { AppUsage } from '@/lib/usage';
+import getWeather from '@/lib/ai/tools/get-weather';
 
 export const maxDuration = 60;
 
@@ -168,6 +169,9 @@ export async function POST(request: Request) {
       ],
     });
 
+    if (!process.env.SUPERMEMORY_API_KEY)
+      throw new Error('Supermemory API not found');
+
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
@@ -194,10 +198,7 @@ export async function POST(request: Request) {
             getWeather,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
+            requestSuggestions: requestSuggestions({ session, dataStream }),
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
@@ -210,13 +211,19 @@ export async function POST(request: Request) {
                 myProvider.languageModel(selectedChatModel).modelId;
               if (!modelId) {
                 finalMergedUsage = usage;
-                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                dataStream.write({
+                  type: 'data-usage',
+                  data: finalMergedUsage,
+                });
                 return;
               }
 
               if (!providers) {
                 finalMergedUsage = usage;
-                dataStream.write({ type: 'data-usage', data: finalMergedUsage });
+                dataStream.write({
+                  type: 'data-usage',
+                  data: finalMergedUsage,
+                });
                 return;
               }
 
@@ -232,6 +239,7 @@ export async function POST(request: Request) {
         });
 
         result.consumeStream();
+        // console.log(result);
 
         dataStream.merge(
           result.toUIMessageStream({
@@ -282,16 +290,6 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof ChatSDKError) {
       return error.toResponse();
-    }
-
-    // Check for Vercel AI Gateway credit card error
-    if (
-      error instanceof Error &&
-      error.message?.includes(
-        'AI Gateway requires a valid credit card on file to service requests',
-      )
-    ) {
-      return new ChatSDKError('bad_request:activate_gateway').toResponse();
     }
 
     console.error('Unhandled error in chat API:', error);

@@ -43,14 +43,14 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 <Button
                   variant="ghost"
                   type="button"
-                  className="h-8 p-1 md:h-fit md:p-2"
+                  className="group/add h-8 p-1 md:h-fit md:p-2"
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');
                     router.refresh();
                   }}
                 >
-                  <PlusIcon />
+                  <PlusIcon className="transition-all group-hover/add:rotate-90" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent align="end" className="hidden md:block">

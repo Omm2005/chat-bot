@@ -9,12 +9,12 @@ export interface ChatModel {
 export const chatModels: Array<ChatModel> = [
   {
     id: 'chat-model',
-    name: 'Grok Vision',
+    name: 'Gemini 2.5 Flash',
     description: 'Advanced multimodal model with vision and text capabilities',
   },
   {
     id: 'chat-model-reasoning',
-    name: 'Grok Reasoning',
+    name: 'Gemini 2.5 Flash (Reasoning)',
     description:
       'Uses advanced chain-of-thought reasoning for complex problems',
   },

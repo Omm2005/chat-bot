@@ -69,7 +69,7 @@ const PurePreviewMessage = ({
         })}
       >
         {message.role === 'assistant' && (
-          <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
+          <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-md bg-background ring-1 ring-border">
             <SparklesIcon size={14} />
           </div>
         )}
@@ -129,7 +129,7 @@ const PurePreviewMessage = ({
                     <MessageContent
                       data-testid="message-content"
                       className={cn({
-                        'w-fit break-words rounded-2xl px-3 py-2 text-right text-white':
+                        'w-fit break-words rounded-md px-3 py-2 text-right text-white':
                           message.role === 'user',
                         'bg-transparent px-0 py-0 text-left':
                           message.role === 'assistant',
@@ -195,7 +195,7 @@ const PurePreviewMessage = ({
                 return (
                   <div
                     key={toolCallId}
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                    className="rounded-md border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
                   >
                     Error creating document: {String(part.output.error)}
                   </div>
@@ -312,13 +312,13 @@ export const ThinkingMessage = () => {
       data-role={role}
     >
       <div className="flex items-start justify-start gap-3">
-        <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
+        <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-md bg-background ring-1 ring-border">
           <SparklesIcon size={14} />
         </div>
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
           <div className="p-0 text-muted-foreground text-sm">
-            <LoadingText>Thinking...</LoadingText>
+            <LoadingText>Aaaaaaaaa....</LoadingText>
           </div>
         </div>
       </div>

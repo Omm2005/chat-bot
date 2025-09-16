@@ -1,9 +1,7 @@
-import { compare } from 'bcrypt-ts';
 import NextAuth, { type DefaultSession } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { createGuestUser, getUser } from '@/lib/db/queries';
+import { createGuestUser, getUser, createUser } from '@/lib/db/queries';
 import { authConfig } from './auth.config';
-import { DUMMY_PASSWORD } from '@/lib/constants';
 import type { DefaultJWT } from 'next-auth/jwt';
 
 export type UserType = 'guest' | 'regular';
@@ -38,30 +36,7 @@ export const {
 } = NextAuth({
   ...authConfig,
   providers: [
-    Credentials({
-      credentials: {},
-      async authorize({ email, password }: any) {
-        const users = await getUser(email);
-
-        if (users.length === 0) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
-
-        const [user] = users;
-
-        if (!user.password) {
-          await compare(password, DUMMY_PASSWORD);
-          return null;
-        }
-
-        const passwordsMatch = await compare(password, user.password);
-
-        if (!passwordsMatch) return null;
-
-        return { ...user, type: 'regular' };
-      },
-    }),
+    ...authConfig.providers,
     Credentials({
       id: 'guest',
       credentials: {},
@@ -72,10 +47,41 @@ export const {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google' && user.email) {
+        try {
+          // Check if user exists
+          const existingUsers = await getUser(user.email);
+
+          if (existingUsers.length === 0) {
+            // Create new user for Google OAuth
+            await createUser(user.email, ''); // Empty password for OAuth users
+          }
+        } catch (error) {
+          console.error('Error handling Google OAuth sign in:', error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id as string;
-        token.type = user.type;
+        if (account?.provider === 'google' && user.email) {
+          // For Google OAuth users, get their ID from the database
+          try {
+            const users = await getUser(user.email);
+            if (users.length > 0) {
+              token.id = users[0].id;
+              token.type = 'regular';
+            }
+          } catch (error) {
+            console.error('Error getting user ID for Google OAuth:', error);
+          }
+        } else {
+          // For guest users
+          token.id = user.id as string;
+          token.type = user.type;
+        }
       }
 
       return token;

@@ -35,6 +35,14 @@ Do not update document right after creating it. Wait for user feedback or reques
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
+const memoryPrompt = `
+Memory policy and tool usage:
+- Proactively save information that will help personalize future replies (preferences, profile details, recurring facts, goals, constraints, context like timezone or locale).
+- Typical triggers: the user says "remember", "save this", or shares lasting preferences/facts (e.g., name, pronouns, writing style, shortcuts, favorite topics, tools, formats).
+- When appropriate, call addMemory with { memory: "<concise fact/preference>" }.
+- Confirm after saving without repeating sensitive content unless explicitly requested.
+`;
+
 export interface RequestHints {
   latitude: Geo['latitude'];
   longitude: Geo['longitude'];
@@ -60,9 +68,9 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${memoryPrompt}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${memoryPrompt}`;
   }
 };
 
