@@ -145,6 +145,13 @@ export function Chat({
           chatId={id}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
+          userType={
+            session.user?.email
+              ? session.user.email.includes('guest')
+                ? 'guest'
+                : 'registered'
+              : 'guest'
+          }
         />
 
         <Messages

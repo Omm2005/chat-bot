@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import type { Vote } from '@/lib/db/schema';
 import { DocumentToolResult } from './document';
 import { SparklesIcon } from './icons';
@@ -24,6 +24,8 @@ import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import { useSession } from 'next-auth/react';
+import { guestRegex } from '@/lib/constants';
 
 const PurePreviewMessage = ({
   chatId,
@@ -47,6 +49,11 @@ const PurePreviewMessage = ({
   isArtifactVisible: boolean;
 }) => {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
+  const { data: session } = useSession();
+  const isGuest = useMemo(
+    () => guestRegex.test(session?.user?.email ?? ''),
+    [session?.user?.email],
+  );
 
   const attachmentsFromMessage = message.parts.filter(
     (part) => part.type === 'file',
@@ -112,12 +119,12 @@ const PurePreviewMessage = ({
             const { type } = part;
             const key = `message-${message.id}-part-${index}`;
 
-            if (type === 'reasoning' && part.text?.trim().length > 0) {
+            if (type === 'reasoning') {
               return (
                 <MessageReasoning
                   key={key}
                   isLoading={isLoading}
-                  reasoning={part.text}
+                  reasoning={part.text ?? ''}
                 />
               );
             }
@@ -177,6 +184,12 @@ const PurePreviewMessage = ({
                     {state === 'input-available' && (
                       <ToolInput input={part.input} />
                     )}
+                    {state === 'output-error' && (
+                      <ToolOutput
+                        output={undefined}
+                        errorText={part.errorText}
+                      />
+                    )}
                     {state === 'output-available' && (
                       <ToolOutput
                         output={<Weather weatherAtLocation={part.output} />}
@@ -189,16 +202,19 @@ const PurePreviewMessage = ({
             }
 
             if (type === 'tool-createDocument') {
-              const { toolCallId } = part;
+              const { toolCallId, state } = part;
 
-              if (part.output && 'error' in part.output) {
+              if (state === 'output-error') {
                 return (
-                  <div
-                    key={toolCallId}
-                    className="rounded-md border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                  >
-                    Error creating document: {String(part.output.error)}
-                  </div>
+                  <Tool key={toolCallId} defaultOpen={true}>
+                    <ToolHeader type="tool-createDocument" state={state} />
+                    <ToolContent>
+                      <ToolOutput
+                        output={undefined}
+                        errorText={part.errorText}
+                      />
+                    </ToolContent>
+                  </Tool>
                 );
               }
 
@@ -212,16 +228,19 @@ const PurePreviewMessage = ({
             }
 
             if (type === 'tool-updateDocument') {
-              const { toolCallId } = part;
+              const { toolCallId, state } = part;
 
-              if (part.output && 'error' in part.output) {
+              if (state === 'output-error') {
                 return (
-                  <div
-                    key={toolCallId}
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
-                  >
-                    Error updating document: {String(part.output.error)}
-                  </div>
+                  <Tool key={toolCallId} defaultOpen={true}>
+                    <ToolHeader type="tool-updateDocument" state={state} />
+                    <ToolContent>
+                      <ToolOutput
+                        output={undefined}
+                        errorText={part.errorText}
+                      />
+                    </ToolContent>
+                  </Tool>
                 );
               }
 
@@ -246,6 +265,12 @@ const PurePreviewMessage = ({
                     {state === 'input-available' && (
                       <ToolInput input={part.input} />
                     )}
+                    {state === 'output-error' && (
+                      <ToolOutput
+                        output={undefined}
+                        errorText={part.errorText}
+                      />
+                    )}
                     {state === 'output-available' && (
                       <ToolOutput
                         output={
@@ -259,6 +284,102 @@ const PurePreviewMessage = ({
                               result={part.output}
                               isReadonly={isReadonly}
                             />
+                          )
+                        }
+                        errorText={undefined}
+                      />
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
+            // Memory tools: addMemory
+            if (type === 'tool-addMemory') {
+              const { toolCallId, state } = part;
+
+              return (
+                <Tool key={toolCallId} defaultOpen={true}>
+                  <ToolHeader type="tool-addMemory" state={state} />
+                  <ToolContent>
+                    {state === 'input-available' && (
+                      <ToolInput input={part.input} />
+                    )}
+                    {state === 'output-error' && (
+                      <ToolOutput
+                        output={undefined}
+                        errorText={part.errorText}
+                      />
+                    )}
+                    {state === 'output-available' && (
+                      <ToolOutput
+                        output={
+                          isGuest ? (
+                            <div className="rounded border p-2 text-red-500">
+                              This feature is not available for guest users.
+                            </div>
+                          ) : (
+                            <div className="space-y-2 p-1 text-sm">
+                              <div className="font-medium">Memory added</div>
+                              <div className="text-muted-foreground text-xs">
+                                The memory was saved successfully.
+                              </div>
+                            </div>
+                          )
+                        }
+                        errorText={undefined}
+                      />
+                    )}
+                  </ToolContent>
+                </Tool>
+              );
+            }
+
+            // Memory tools: searchMemories
+            if (type === 'tool-searchMemories') {
+              const { toolCallId, state } = part;
+
+              return (
+                <Tool key={toolCallId} defaultOpen={true}>
+                  <ToolHeader type="tool-searchMemories" state={state} />
+                  <ToolContent>
+                    {state === 'input-available' && (
+                      <ToolInput input={part.input} />
+                    )}
+                    {state === 'output-error' && (
+                      <ToolOutput
+                        output={undefined}
+                        errorText={part.errorText}
+                      />
+                    )}
+                    {state === 'output-available' && (
+                      <ToolOutput
+                        output={
+                          isGuest ? (
+                            <div className="rounded border p-2 text-red-500">
+                              This feature is not available for guest users.
+                            </div>
+                          ) : (
+                            <div className="space-y-2 p-1 text-sm">
+                              <div className="font-medium">Search Results</div>
+                              {'count' in (part.output || {}) && (
+                                <div className="text-muted-foreground text-xs">
+                                  {String(part.output.count)} result(s)
+                                </div>
+                              )}
+                              {'results' in (part.output || {}) &&
+                                Array.isArray((part.output as any).results) && (
+                                  <div className="rounded-md bg-muted/30 p-2">
+                                    <pre className="whitespace-pre-wrap break-words text-xs">
+                                      {JSON.stringify(
+                                        (part.output as any).results,
+                                        null,
+                                        2,
+                                      )}
+                                    </pre>
+                                  </div>
+                                )}
+                            </div>
                           )
                         }
                         errorText={undefined}
@@ -318,7 +439,7 @@ export const ThinkingMessage = () => {
 
         <div className="flex w-full flex-col gap-2 md:gap-4">
           <div className="p-0 text-muted-foreground text-sm">
-            <LoadingText>Aaaaaaaaa....</LoadingText>
+            <LoadingText>Thinking…</LoadingText>
           </div>
         </div>
       </div>
@@ -342,7 +463,7 @@ const LoadingText = ({ children }: { children: React.ReactNode }) => {
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
       }}
-      className="flex items-center text-transparent"
+      className="flex items-center text-muted-foreground"
     >
       {children}
     </motion.div>

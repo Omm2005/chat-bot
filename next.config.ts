@@ -10,11 +10,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    remotePatterns: [
-      {
-        hostname: 'avatar.vercel.sh',
-      },
-    ],
+    // remotePatterns: [
+    //   {
+    //     hostname: 'avatar.vercel.sh',
+    //   },
+    // ],
   },
 };
 

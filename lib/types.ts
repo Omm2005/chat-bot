@@ -7,6 +7,7 @@ import type { InferUITool, UIMessage } from 'ai';
 import type { AppUsage } from './usage';
 import type { ArtifactKind } from '@/components/artifact';
 import type { Suggestion } from './db/schema';
+// Note: Supermemory tool types are defined inline for UI compatibility.
 
 export type DataPart = { type: 'append-message'; message: string };
 
@@ -23,11 +24,32 @@ type requestSuggestionsTool = InferUITool<
   ReturnType<typeof requestSuggestions>
 >;
 
+// Supermemory tool UI types (compatible with current AI SDK)
+type addMemoryToolType = {
+  input: { memory: string };
+  output: { success: boolean; memory?: unknown; error?: string };
+};
+type searchMemoriesToolType = {
+  input: {
+    informationToGet: string;
+    includeFullDocs?: boolean;
+    limit?: number;
+  };
+  output: {
+    success: boolean;
+    results?: unknown[];
+    count?: number;
+    error?: string;
+  };
+};
+
 export type ChatTools = {
   getWeather: weatherTool;
   createDocument: createDocumentTool;
   updateDocument: updateDocumentTool;
   requestSuggestions: requestSuggestionsTool;
+  addMemory: addMemoryToolType;
+  searchMemories: searchMemoriesToolType;
 };
 
 export type CustomUIDataTypes = {

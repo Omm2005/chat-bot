@@ -37,7 +37,7 @@ export type ReasoningProps = ComponentProps<typeof Collapsible> & {
   duration?: number;
 };
 
-const AUTO_CLOSE_DELAY = 500;
+const AUTO_CLOSE_DELAY = 3000;
 const MS_IN_S = 1000;
 
 export const Reasoning = memo(
@@ -128,7 +128,7 @@ export const ReasoningTrigger = memo(
           <>
             <BrainIcon className="size-4" />
             {isStreaming || duration === 0 ? (
-              <p>Aaaaaaaaa....</p>
+              <p>Thinking…</p>
             ) : (
               <p>Thought for {duration}s</p>
             )}

@@ -44,6 +44,10 @@ import { getUsage } from 'tokenlens/helpers';
 import type { ModelCatalog } from 'tokenlens/core';
 import type { AppUsage } from '@/lib/usage';
 import getWeather from '@/lib/ai/tools/get-weather';
+import {
+  addMemoryTool,
+  searchMemoriesTool,
+} from '@/lib/ai/tools/supermemory-tools';
 
 export const maxDuration = 60;
 
@@ -184,21 +188,47 @@ export async function POST(request: Request) {
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
+          experimental_activeTools: (() => {
+            if (selectedChatModel === 'chat-model-reasoning') {
+              const base: ('addMemory' | 'searchMemories')[] = [];
+              if (userType !== 'guest')
+                base.push('addMemory', 'searchMemories');
+              return base;
+            }
+            const base: (
+              | 'getWeather'
+              | 'createDocument'
+              | 'updateDocument'
+              | 'requestSuggestions'
+              | 'addMemory'
+              | 'searchMemories'
+            )[] = [
+              'getWeather',
+              'createDocument',
+              'updateDocument',
+              'requestSuggestions',
+            ];
+            // Only enable memory tools for non-guest users
+            if (userType !== 'guest') {
+              base.push('addMemory', 'searchMemories');
+            }
+            return base;
+          })(),
           experimental_transform: smoothStream({ chunking: 'word' }),
+          //@ts-ignore
           tools: {
             getWeather,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({ session, dataStream }),
+
+            addMemory: addMemoryTool(process.env.SUPERMEMORY_API_KEY || '', {
+              projectId: session.user.id,
+            }),
+            searchMemories: searchMemoriesTool(
+              process.env.SUPERMEMORY_API_KEY || '',
+              { projectId: session.user.id },
+            ),
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
@@ -239,7 +269,6 @@ export async function POST(request: Request) {
         });
 
         result.consumeStream();
-        // console.log(result);
 
         dataStream.merge(
           result.toUIMessageStream({

@@ -92,8 +92,12 @@ export function SidebarUserNav({ user }: { user: User }) {
               >
                 <Avatar className="size-6 rounded-full border border-neutral-200 dark:border-neutral-700">
                   <AvatarImage
-                    src={user.image || `https://avatar.vercel.sh/${user.email}`}
-                    alt={user.name || user.email || 'User Avatar'}
+                    src={
+                      isGuest
+                        ? 'https://github.com/shadcn.png'
+                        : user.image || `https://avatar.vercel.sh/${user.email}`
+                    }
+                    alt={isGuest ? '@shadcn' : user.name || user.email || 'User Avatar'}
                   />
                   <AvatarFallback>
                     {(() => {
@@ -125,8 +129,12 @@ export function SidebarUserNav({ user }: { user: User }) {
               <div className="flex items-center gap-2">
                 <Avatar className="size-10 shrink-0 rounded-full border-neutral-200 dark:border-neutral-700">
                   <AvatarImage
-                    src={user.image || `https://avatar.vercel.sh/${user.email}`}
-                    alt={user.name || user.email || 'User Avatar'}
+                    src={
+                      isGuest
+                        ? 'https://github.com/shadcn.png'
+                        : user.image || `https://avatar.vercel.sh/${user.email}`
+                    }
+                    alt={isGuest ? '@shadcn' : user.name || user.email || 'User Avatar'}
                     className="m-0 size-10 rounded-full p-0"
                   />
                   <AvatarFallback className="m-0 size-10 rounded-full p-0">

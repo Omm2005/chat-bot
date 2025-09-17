@@ -1,6 +1,11 @@
 import { tool as createTool } from 'ai';
 import { z } from 'zod';
 import 'dotenv/config';
+import Supermemory from 'supermemory';
+
+const client = new Supermemory({
+  apiKey: process.env.SUPERMEMORY_API_KEY,
+});
 
 export const addMemory = ({
   projectId,

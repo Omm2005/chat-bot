@@ -15,10 +15,12 @@ function PureChatHeader({
   chatId,
   selectedVisibilityType,
   isReadonly,
+  userType,
 }: {
   chatId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
+  userType: 'guest' | 'registered';
 }) {
   const router = useRouter();
   const { open } = useSidebar();
@@ -51,7 +53,7 @@ function PureChatHeader({
         />
       )}
 
-      {/* {!isReadonly && <Memory />} */}
+      {!isReadonly && userType === 'registered' && <Memory />}
     </header>
   );
 }

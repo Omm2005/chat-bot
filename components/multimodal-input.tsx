@@ -438,51 +438,79 @@ function PureModelSelectorCompact({
   const selectedModel = chatModels.find(
     (model) => model.id === optimisticModelId,
   );
+  const isReasoning = optimisticModelId === 'chat-model-reasoning';
+  const toggleReasoning = () => {
+    const nextId = isReasoning ? 'chat-model' : 'chat-model-reasoning';
+    const next = chatModels.find((m) => m.id === nextId);
+    if (!next) return;
+    setOptimisticModelId(next.id);
+    onModelChange?.(next.id);
+    startTransition(() => {
+      saveChatModelAsCookie(next.id);
+    });
+  };
 
   return (
-    // <PromptInputModelSelect
-    //   value={selectedModel?.name}
-    //   onValueChange={(modelName) => {
-    //     const model = chatModels.find((m) => m.name === modelName);
-    //     if (model) {
-    //       setOptimisticModelId(model.id);
-    //       onModelChange?.(model.id);
-    //       startTransition(() => {
-    //         saveChatModelAsCookie(model.id);
-    //       });
-    //     }
-    //   }}
-    // >
-    //   {/* <SelectPrimitive.Trigger
-    //     type="button"
-    //     className="flex h-8 items-center gap-2 rounded-lg border-0 bg-background px-2 text-foreground shadow-none transition-colors hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-    //   >
-    //     <CpuIcon size={16} />
-    //     <span className="hidden font-medium text-xs sm:block">
-    //       {selectedModel?.name}
-    //     </span>
-    //     <ChevronDownIcon size={16} />
-    //   </SelectPrimitive.Trigger> */}
-    //   <PromptInputModelSelectContent className="min-w-[260px] p-0">
-    //     <div className="flex flex-col gap-px">
-    //       {chatModels.map((model) => (
-    //         <SelectItem
-    //           key={model.id}
-    //           value={model.name}
-    //           className="px-3 py-2 text-xs"
-    //         >
-    //           <div className="flex min-w-0 flex-1 flex-col gap-1">
-    //             <div className="truncate font-medium text-xs">{model.name}</div>
-    //             <div className="truncate text-[10px] text-muted-foreground leading-tight">
-    //               {model.description}
-    //             </div>
-    //           </div>
-    //         </SelectItem>
-    //       ))}
-    //     </div>
-    //   </PromptInputModelSelectContent>
-    // </PromptInputModelSelect>
-    <></>
+    <PromptInputModelSelect
+      value={selectedModel?.name}
+      onValueChange={(modelName) => {
+        const model = chatModels.find((m) => m.name === modelName);
+        if (model) {
+          setOptimisticModelId(model.id);
+          onModelChange?.(model.id);
+          startTransition(() => {
+            saveChatModelAsCookie(model.id);
+          });
+        }
+      }}
+    >
+      <SelectPrimitive.Trigger
+        type="button"
+        className="flex h-8 items-center gap-2 rounded-lg border-0 bg-background px-2 text-foreground shadow-none transition-colors hover:bg-accent focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+      >
+        <CpuIcon size={16} />
+        <span className="hidden font-medium text-xs sm:block">
+          {selectedModel?.name}
+        </span>
+        <ChevronDownIcon size={16} />
+      </SelectPrimitive.Trigger>
+      <PromptInputModelSelectContent className="min-w-[260px] p-0">
+        <div className="flex flex-col gap-px">
+          <div className="flex items-center justify-between px-3 py-2">
+            <div className="font-medium text-[10px] text-muted-foreground uppercase tracking-wide">
+              Reasoning
+            </div>
+            <Button
+              type="button"
+              variant={isReasoning ? 'default' : 'outline'}
+              className="h-7 rounded-md px-2 text-xs"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleReasoning();
+              }}
+            >
+              {isReasoning ? 'On' : 'Off'}
+            </Button>
+          </div>
+          <div className="h-px bg-border" />
+          {chatModels.map((model) => (
+            <SelectItem
+              key={model.id}
+              value={model.name}
+              className="px-3 py-2 text-xs"
+            >
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <div className="truncate font-medium text-xs">{model.name}</div>
+                <div className="truncate text-[10px] text-muted-foreground leading-tight">
+                  {model.description}
+                </div>
+              </div>
+            </SelectItem>
+          ))}
+        </div>
+      </PromptInputModelSelectContent>
+    </PromptInputModelSelect>
   );
 }
 

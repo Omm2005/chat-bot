@@ -58,6 +58,12 @@ About the origin of user's request:
 - country: ${requestHints.country}
 `;
 
+const memorySearchGuidance = `
+Memory retrieval:
+- When helpful, search previously saved memories using searchMemories with { informationToGet, includeFullDocs, limit }.
+- Use concise queries and small limits (e.g., 3–10) unless more is justified.
+`;
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
@@ -68,9 +74,16 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === 'chat-model-reasoning') {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${memoryPrompt}`;
+    const reasoningGuardrails = `
+Reasoning visibility:
+- Think step-by-step inside <think> ... </think> tags.
+- Place ONLY your final user-facing answer outside the <think> block.
+- Do not reference that you used <think> or reveal the internal steps.
+`;
+
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${memoryPrompt}\n\n${memorySearchGuidance}\n\n${reasoningGuardrails}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${memoryPrompt}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${memoryPrompt}\n\n${memorySearchGuidance}`;
   }
 };
 
