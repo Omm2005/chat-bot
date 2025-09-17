@@ -1,67 +1,104 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
-</a>
+<h1 align="center">AI Chatbot (Next.js + AI SDK)</h1>
 
-<p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
-</p>
+Conversational AI app built with Next.js App Router, AI SDK, and shadcn/ui — featuring Gemini models, chain‑of‑thought reasoning, memory tools (Supermemory), artifacts, and attachments.
 
-<p align="center">
-  <a href="https://chat-sdk.dev"><strong>Read Docs</strong></a> ·
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
-</p>
-<br/>
+Links: Features · Quick Start · Environment · Usage · Troubleshooting
 
 ## Features
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://ai-sdk.dev/docs/introduction)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
+- Next.js App Router, RSCs + Server Actions
+- AI SDK text + tools with Gemini (google/genai)
+- Reasoning mode with extracted <think> chain‑of‑thought
+- Memory tools with Supermemory
+  - Add Memory and Search Memories tool calls in chat
+  - Manual “Remember” popover to add memories quickly
+- Artifacts side‑pane for documents and code
+- Auth (guest and regular users) with per‑role entitlements
+- Polished tool UI with real‑time status and error states
 
-## Model Providers
+## Quick Start
 
-This template uses the AI SDK directly with providers. The default configuration uses `@ai-sdk/google` with Gemini (`gemini-2.5-flash`).
-
-### Provider Authentication
-
-Set `GOOGLE_GENERATIVE_AI_API_KEY` in your environment for Gemini. With the [AI SDK](https://ai-sdk.dev/docs/introduction), you can also switch to providers like OpenAI, Anthropic, Cohere, and more with small changes in `lib/ai/providers.ts`.
-
-## Deploy Your Own
-
-You can deploy your own version of the Next.js AI Chatbot to Vercel with one click:
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/templates/next.js/nextjs-ai-chatbot)
-
-## Running locally
-
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
-
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+1) Install dependencies
 
 ```bash
 pnpm install
+```
+
+2) Configure environment (create `.env.local` from `.env.example`)
+
+Required keys:
+
+- `GOOGLE_GENERATIVE_AI_API_KEY` — Gemini
+- `SUPERMEMORY_API_KEY` — Supermemory (memory tools)
+- `POSTGRES_URL` — chat persistence
+- `REDIS_URL` — resumable streaming (optional)
+- `BLOB_READ_WRITE_TOKEN` — file uploads (optional)
+
+3) Run the app
+
+```bash
 pnpm dev
 ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000).
-# chat-bot
+The app runs at http://localhost:3000.
+
+## Environment
+
+- Models are configured in `lib/ai/providers.ts`.
+- Prompts and memory policy in `lib/ai/prompts.ts`.
+- Chat route and tools in `app/(chat)/api/chat/route.ts`.
+- Supermemory tool wrappers in `lib/ai/tools/supermemory-tools.ts`.
+
+## Usage
+
+Reasoning mode
+- Toggle On/Off from the model selector in the input bar.
+- When On, the UI streams a collapsed “Thinking…” panel you can expand.
+- Implementation: `components/multimodal-input.tsx:504`.
+
+Memory tools
+- Automatic: the AI calls Add Memory when you share durable facts/preferences, and Search Memories when context helps.
+- Manual: click “Remember” in the header to add a memory instantly via popover.
+- Implementation:
+  - Tool UI: `components/message.tsx`
+  - Tool server wiring: `app/(chat)/api/chat/route.ts`
+  - Supermemory wrappers: `lib/ai/tools/supermemory-tools.ts`
+  - Manual API: `app/(chat)/api/memory/route.ts`
+  - Manual UI: `components/memory.tsx`
+
+Guest restrictions
+- Guests can chat but memory tools are disabled.
+- Guest avatar uses shadcn placeholder image.
+- Logic: `components/sidebar-user-nav.tsx`, `components/Navbar/profile-dropdown.tsx`.
+
+Tool UX
+- Weather, Documents, Suggestions, and Memory tools render as expandable panels showing parameters and result/error.
+- Error states are clearly labeled; success states show summaries (e.g., “Memory added”).
+
+## Troubleshooting
+
+Memory tool error “a.memories.add is not a function”
+- Ensure dependencies are installed after updates: `pnpm install`.
+- We call Supermemory directly via `supermemory` client. If you changed versions, reinstall to align the API.
+
+Reasoning panel not visible
+- Use the reasoning model (toggle On). The UI only shows the panel when the model emits reasoning parts.
+
+Memory tools not visible
+- You might be using a guest account. Log in as a regular user to enable memory tools.
+
+## Scripts
+
+- `pnpm dev` — start Next.js in dev
+- `pnpm build` — migrate DB + build
+- `pnpm start` — start production server
+
+## Project Map
+
+- Chat API: `app/(chat)/api/chat/route.ts`
+- Memory API: `app/(chat)/api/memory/route.ts`
+- Message UI: `components/message.tsx`
+- Input + Model selector + Reasoning toggle: `components/multimodal-input.tsx`
+- Manual memory popover: `components/memory.tsx`
+- Supermemory tools: `lib/ai/tools/supermemory-tools.ts`
+- Providers (Gemini): `lib/ai/providers.ts`
