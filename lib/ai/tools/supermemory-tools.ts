@@ -20,8 +20,6 @@ export function addMemoryTool(apiKey: string, opts: { projectId: string }) {
         content: memory,
         containerTags,
       });
-      // Return the Supermemory response; AI SDK will mark this as completed
-      // If anything goes wrong, we throw, making the UI show Error state.
       return { success: true, memory: res } as const;
     },
   });
@@ -36,7 +34,7 @@ export function searchMemoriesTool(
 
   return tool({
     description:
-      "Search (recall) memories/details/information about the user or other facts. Use when context from past choices may help the answer.",
+      'Search (recall) memories/details/information about the user or other facts. Use when context from past choices may help the answer.',
     inputSchema: z.object({
       informationToGet: z
         .string()
@@ -53,10 +51,14 @@ export function searchMemoriesTool(
         .min(1)
         .max(50)
         .optional()
-        .default(10)
+        .default(5)
         .describe('Maximum number of results to return'),
     }),
-    execute: async ({ informationToGet, includeFullDocs = true, limit = 10 }) => {
+    execute: async ({
+      informationToGet,
+      includeFullDocs = true,
+      limit = 5,
+    }) => {
       const r = await client.search.execute({
         q: informationToGet,
         containerTags,
@@ -65,8 +67,11 @@ export function searchMemoriesTool(
         includeFullDocs,
       } as any);
 
-      return { success: true, results: r.results, count: r.results?.length ?? 0 } as const;
+      return {
+        success: true,
+        results: r.results,
+        count: r.results?.length ?? 0,
+      } as const;
     },
   });
 }
-

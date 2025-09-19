@@ -26,6 +26,9 @@ import type { ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
 import { useSession } from 'next-auth/react';
 import { guestRegex } from '@/lib/constants';
+import SupermemoryLogo from '@/public/images/Supermemory.svg';
+import Image from 'next/image';
+import { Bot, Dot } from 'lucide-react';
 
 const PurePreviewMessage = ({
   chatId,
@@ -294,7 +297,6 @@ const PurePreviewMessage = ({
               );
             }
 
-            // Memory tools: addMemory
             if (type === 'tool-addMemory') {
               const { toolCallId, state } = part;
 
@@ -319,10 +321,21 @@ const PurePreviewMessage = ({
                               This feature is not available for guest users.
                             </div>
                           ) : (
-                            <div className="space-y-2 p-1 text-sm">
-                              <div className="font-medium">Memory added</div>
+                            <div className="space-y-2 p-3 text-sm">
+                              <div className="flex items-center justify-between">
+                                <div className="font-medium text-lg">
+                                  <Bot className="mr-1 mb-1 inline-block" />
+                                  Memory added
+                                </div>
+                                <Image
+                                  src={SupermemoryLogo}
+                                  alt="Supermemory Logo"
+                                  width={150}
+                                  height={30}
+                                />
+                              </div>
                               <div className="text-muted-foreground text-xs">
-                                The memory was saved successfully.
+                                {part.input.memory}
                               </div>
                             </div>
                           )
@@ -335,7 +348,6 @@ const PurePreviewMessage = ({
               );
             }
 
-            // Memory tools: searchMemories
             if (type === 'tool-searchMemories') {
               const { toolCallId, state } = part;
 
@@ -360,25 +372,40 @@ const PurePreviewMessage = ({
                               This feature is not available for guest users.
                             </div>
                           ) : (
-                            <div className="space-y-2 p-1 text-sm">
-                              <div className="font-medium">Search Results</div>
-                              {'count' in (part.output || {}) && (
-                                <div className="text-muted-foreground text-xs">
-                                  {String(part.output.count)} result(s)
+                            <div className="space-y-2 p-3 text-sm">
+                              <div className="flex items-center justify-between">
+                                <div className="font-medium text-lg">
+                                  <Bot className="mr-2 mb-1 inline-block" />
+                                  Memory found
                                 </div>
-                              )}
-                              {'results' in (part.output || {}) &&
-                                Array.isArray((part.output as any).results) && (
-                                  <div className="rounded-md bg-muted/30 p-2">
-                                    <pre className="whitespace-pre-wrap break-words text-xs">
-                                      {JSON.stringify(
-                                        (part.output as any).results,
-                                        null,
-                                        2,
-                                      )}
-                                    </pre>
-                                  </div>
-                                )}
+                                <Image
+                                  src={SupermemoryLogo}
+                                  alt="Supermemory Logo"
+                                  width={150}
+                                  height={30}
+                                />
+                              </div>
+                              <div className="text-muted-foreground text-xs">
+                                {Array.isArray(part.output.results) &&
+                                part.output.results.length > 0
+                                  ? (
+                                      part.output.results as {
+                                        id?: string | number;
+                                        content: string;
+                                      }[]
+                                    ).map((chunk, idx) => (
+                                      <div
+                                        key={String(chunk.id ?? idx)}
+                                        className="mt-2"
+                                      >
+                                        <div className="truncate text-muted-foreground text-xs">
+                                          <Dot className="mr-1 mb-1 inline-block" />
+                                          {chunk.content}
+                                        </div>
+                                      </div>
+                                    ))
+                                  : 'No relevant memories found.'}
+                              </div>
                             </div>
                           )
                         }

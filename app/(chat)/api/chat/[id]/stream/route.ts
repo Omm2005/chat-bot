@@ -102,6 +102,7 @@ export async function GET(
       },
     });
 
+    console.log(restoredStream);
     return new Response(
       restoredStream.pipeThrough(new JsonToSseTransformStream()),
       { status: 200 },
