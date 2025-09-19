@@ -146,7 +146,7 @@ const PurePreviewMessage = ({
                       })}
                       style={
                         message.role === 'user'
-                          ? { backgroundColor: '#006cff' }
+                          ? { backgroundColor: '#d97706' }
                           : undefined
                       }
                     >
@@ -385,7 +385,7 @@ const PurePreviewMessage = ({
                                   height={30}
                                 />
                               </div>
-                              <div className="text-muted-foreground text-xs">
+                              <div className="whitespace-pre-wrap break-words text-muted-foreground text-xs">
                                 {Array.isArray(part.output.results) &&
                                 part.output.results.length > 0
                                   ? (

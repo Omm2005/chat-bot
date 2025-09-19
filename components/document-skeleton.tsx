@@ -8,8 +8,8 @@ export const DocumentSkeleton = ({
   artifactKind: ArtifactKind;
 }) => {
   return artifactKind === 'image' ? (
-    <div className="flex h-[calc(100dvh-60px)] w-full flex-col items-center justify-center gap-4">
-      <div className="size-96 animate-pulse rounded-lg bg-muted-foreground/20" />
+    <div className="flex h-[calc(100svh-60px)] w-full flex-col items-center justify-center gap-4">
+      <div className="h-auto w-full max-w-[22rem] aspect-[4/3] animate-pulse rounded-lg bg-muted-foreground/20" />
     </div>
   ) : (
     <div className="flex w-full flex-col gap-4">

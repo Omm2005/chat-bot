@@ -10,6 +10,8 @@ import type { ComponentProps } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import type { AppUsage } from '@/lib/usage';
+import { Coins } from 'lucide-react';
+import { Button } from '../ui/button';
 
 export type ContextProps = ComponentProps<'button'> & {
   /** Optional full usage payload to enable breakdown view */
@@ -71,7 +73,6 @@ export const ContextIcon = ({ percent }: ContextIconProps) => {
   );
 };
 
-
 function InfoRow({
   label,
   tokens,
@@ -85,14 +86,9 @@ function InfoRow({
     <div className="flex items-center justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2 font-mono">
-        <span className="text-right min-w-[4ch]">
+        <span className="min-w-[4ch] text-right">
           {tokens === undefined ? '—' : tokens.toLocaleString()}
         </span>
-        {costText !== undefined && costText !== null && !isNaN(parseFloat(costText)) && (
-          <span className="text-muted-foreground">
-            ${parseFloat(costText).toFixed(6)}
-          </span>
-        )}
       </div>
     </div>
   );
@@ -109,32 +105,21 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
           className={cn(
-            'inline-flex items-center gap-1 select-none rounded-md text-sm',
+            'inline-flex select-none items-center gap-1 rounded-full text-muted-foreground outline-0 ring-0 transition-colors hover:text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 disabled:opacity-50',
             'cursor-pointer bg-background text-foreground',
             className,
           )}
-          type="button"
+          variant={'outline'}
           {...props}
         >
-          <span className="hidden font-medium text-muted-foreground">
-            {usedPercent.toFixed(1)}%
-          </span>
-          <ContextIcon percent={usedPercent} />
-        </button>
+          <Coins className="size-4 text-muted-foreground" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side="top" className="w-fit p-3">
         <div className="min-w-[240px] space-y-2">
-          <div className="flex items-start justify-between text-sm">
-            <span>{usedPercent.toFixed(1)}%</span>
-            <span className="text-muted-foreground">
-              {hasMax ? `${used} / ${max} tokens` : `${used} tokens`}
-            </span>
-          </div>
-          <div className="space-y-2">
-            <Progress className="h-2 bg-muted" value={usedPercent} />
-          </div>
+          <div className="space-y-2">Tokens Used</div>
           <div className="mt-1 space-y-1">
             {usage?.cachedInputTokens && usage.cachedInputTokens > 0 && (
               <InfoRow
@@ -162,18 +147,19 @@ export const Context = ({ className, usage, ...props }: ContextProps) => {
               }
               costText={usage?.costUSD?.reasoningUSD?.toString()}
             />
-            {usage?.costUSD?.totalUSD !== undefined && (
+            {usage?.totalTokens !== undefined && (
               <>
                 <Separator className="mt-1" />
-                <div className="flex justify-between items-center pt-1 text-xs">
-                  <span className="text-muted-foreground">Total cost</span>
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <span className="text-muted-foreground">Total tokens</span>
                   <div className="flex items-center gap-2 font-mono">
-                    <span className="text-right min-w-[4ch]"></span>
+                    <span className="min-w-[4ch] text-right" />
                     <span>
-                      {!isNaN(parseFloat(usage.costUSD.totalUSD.toString())) 
-                        ? `$${parseFloat(usage.costUSD.totalUSD.toString()).toFixed(6)}`
-                        : '—'
-                      }
+                      {!Number.isNaN(
+                        Number.parseFloat(usage.totalTokens.toString()),
+                      )
+                        ? `${Number.parseFloat(usage.totalTokens.toString())}`
+                        : '—'}
                     </span>
                   </div>
                 </div>

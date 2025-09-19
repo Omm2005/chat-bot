@@ -89,7 +89,7 @@ const Tool = ({
     <Tooltip open={isHovered && !isAnimating}>
       <TooltipTrigger asChild>
         <motion.div
-          className={cx('rounded-full p-3', {
+          className={cx('w-fit rounded-full p-3', {
             'bg-primary text-primary-foreground!': selectedTool === description,
           })}
           onHoverStart={() => {

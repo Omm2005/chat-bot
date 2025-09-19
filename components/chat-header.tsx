@@ -55,7 +55,7 @@ function PureChatHeader({
   }, [chatId, copyToClipboard]);
 
   return (
-    <header className="sticky top-0 flex items-center gap-2 bg-background px-2 py-1.5 md:px-2">
+    <header className="sticky top-0 flex flex-wrap items-center gap-2 overflow-x-auto bg-background px-2 py-1.5 md:flex-nowrap md:overflow-visible md:px-2">
       <SidebarToggle />
 
       {(!open || windowWidth < 768) && (
@@ -68,7 +68,7 @@ function PureChatHeader({
           }}
         >
           <PlusIcon className="transition-all group-hover:rotate-90" />
-          <span className="md:sr-only">New Chat</span>
+          <span className="hidden md:inline">New Chat</span>
         </Button>
       )}
 
