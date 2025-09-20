@@ -135,15 +135,18 @@ function PureMultimodalInput({
   const submitForm = useCallback(() => {
     window.history.replaceState({}, '', `/chat/${chatId}`);
 
+    const supportsAttachments = selectedModelId !== 'chat-model-reasoning';
     sendMessage({
       role: 'user',
       parts: [
-        ...attachments.map((attachment) => ({
-          type: 'file' as const,
-          url: attachment.url,
-          name: attachment.name,
-          mediaType: attachment.contentType,
-        })),
+        ...(supportsAttachments
+          ? attachments.map((attachment) => ({
+              type: 'file' as const,
+              url: attachment.url,
+              name: attachment.name,
+              mediaType: attachment.contentType,
+            }))
+          : []),
         {
           type: 'text',
           text: input,
@@ -168,6 +171,7 @@ function PureMultimodalInput({
     setLocalStorageInput,
     width,
     chatId,
+    selectedModelId,
   ]);
 
   const uploadFile = async (file: File) => {
@@ -284,6 +288,7 @@ function PureMultimodalInput({
         className="-top-4 -left-4 pointer-events-none fixed size-0.5 opacity-0"
         ref={fileInputRef}
         multiple
+        accept="image/png,image/jpeg,application/pdf"
         onChange={handleFileChange}
         tabIndex={-1}
       />
@@ -401,22 +406,26 @@ function PureAttachmentsButton({
   status: UseChatHelpers<ChatMessage>['status'];
   selectedModelId: string;
 }) {
-  const isReasoningModel = selectedModelId === 'chat-model-reasoning';
+  const disableAttachments = selectedModelId === 'chat-model-reasoning';
 
   return (
-    // <Button
-    //   data-testid="attachments-button"
-    //   className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
-    //   onClick={(event) => {
-    //     event.preventDefault();
-    //     fileInputRef.current?.click();
-    //   }}
-    //   disabled={status !== 'ready' || isReasoningModel}
-    //   variant="ghost"
-    // >
-    //   <PaperclipIcon size={14} style={{ width: 14, height: 14 }} />
-    // </Button>
-    <></>
+    <Button
+      data-testid="attachments-button"
+      className="aspect-square h-8 rounded-lg p-1 transition-colors hover:bg-accent"
+      onClick={(event) => {
+        event.preventDefault();
+        fileInputRef.current?.click();
+      }}
+      disabled={status !== 'ready' || disableAttachments}
+      variant="ghost"
+      title={
+        disableAttachments
+          ? 'Attachments are disabled for this model'
+          : 'Attach files (PNG, JPEG, or PDF)'
+      }
+    >
+      <PaperclipIcon size={14} style={{ width: 14, height: 14 }} />
+    </Button>
   );
 }
 

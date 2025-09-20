@@ -140,7 +140,7 @@ export function Chat({
 
   return (
     <>
-      <div className="overscroll-behavior-contain flex h-[100svh] max-h-screen min-h-0 w-full min-w-0 max-w-full touch-pan-y flex-col overflow-x-hidden bg-background md:h-dvh">
+      <div className="overscroll-behavior-contain flex h-[100svh] max-h-screen min-h-0 w-full min-w-0 max-w-full touch-pan-y flex-col overflow-hidden bg-background md:h-dvh">
         <ChatHeader
           chatId={id}
           selectedVisibilityType={visibilityType}

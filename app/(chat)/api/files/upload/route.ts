@@ -5,16 +5,31 @@ import { z } from 'zod';
 import { auth } from '@/app/(auth)/auth';
 
 // Use Blob instead of File since File is not available in Node.js environment
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_PDF_BYTES = 10 * 1024 * 1024; // 10MB (approx AI-friendly)
+
 const FileSchema = z.object({
   file: z
     .instanceof(Blob)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: 'File size should be less than 5MB',
-    })
-    // Update the file type based on the kind of files you want to accept
-    .refine((file) => ['image/jpeg', 'image/png'].includes(file.type), {
-      message: 'File type should be JPEG or PNG',
-    }),
+    .refine(
+      (file) =>
+        file.size <=
+        (file.type === 'application/pdf' ? MAX_PDF_BYTES : MAX_IMAGE_BYTES),
+      (file) => ({
+        message:
+          file.type === 'application/pdf'
+            ? 'PDF size must be <= 10MB'
+            : 'Image size must be <= 5MB',
+      }),
+    )
+    // Allow JPEG, PNG, and PDF uploads
+    .refine(
+      (file) =>
+        ['image/jpeg', 'image/png', 'application/pdf'].includes(file.type),
+      {
+        message: 'File type should be JPEG, PNG, or PDF',
+      },
+    ),
 });
 
 export async function POST(request: Request) {

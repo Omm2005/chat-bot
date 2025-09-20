@@ -34,6 +34,11 @@ Required keys:
 - `REDIS_URL` — resumable streaming (optional)
 - `BLOB_READ_WRITE_TOKEN` — file uploads (optional)
 
+Optional (to enable OpenRouter model):
+- `OPENROUTER_API_KEY` — OpenRouter API key
+- `OPENROUTER_SITE_URL` — your site URL for OpenRouter headers (default `http://localhost:3000`)
+- `OPENROUTER_TITLE` — app title for OpenRouter headers (default `AI Chatbot`)
+
 3) Run the app
 
 ```bash
@@ -101,4 +106,4 @@ Memory tools not visible
 - Input + Model selector + Reasoning toggle: `components/multimodal-input.tsx`
 - Manual memory popover: `components/memory.tsx`
 - Supermemory tools: `lib/ai/tools/supermemory-tools.ts`
-- Providers (Gemini): `lib/ai/providers.ts`
+- Providers (Gemini + OpenRouter): `lib/ai/providers.ts`
