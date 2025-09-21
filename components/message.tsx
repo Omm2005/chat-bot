@@ -29,6 +29,7 @@ import { guestRegex } from '@/lib/constants';
 import SupermemoryLogo from '@/public/images/Supermemory.svg';
 import Image from 'next/image';
 import { Bot, Dot } from 'lucide-react';
+// import Stock from './Stock';
 
 const PurePreviewMessage = ({
   chatId,
@@ -224,6 +225,7 @@ const PurePreviewMessage = ({
               return (
                 <DocumentPreview
                   key={toolCallId}
+                  chatId={chatId}
                   isReadonly={isReadonly}
                   result={part.output}
                 />
@@ -250,6 +252,7 @@ const PurePreviewMessage = ({
               return (
                 <div key={toolCallId} className="relative">
                   <DocumentPreview
+                    chatId={chatId}
                     isReadonly={isReadonly}
                     result={part.output}
                     args={{ ...part.output, isUpdate: true }}
@@ -416,6 +419,44 @@ const PurePreviewMessage = ({
                 </Tool>
               );
             }
+
+            // if (type === 'tool-stockTool') {
+            //   const { toolCallId, state } = part;
+
+            //   return (
+            //     <Tool key={toolCallId} defaultOpen={true}>
+            //       <ToolHeader type="tool-stockTool" state={state} />
+            //       <ToolContent>
+            //         {state === 'input-available' && (
+            //           <ToolInput input={part.input} />
+            //         )}
+            //         {state === 'output-error' && (
+            //           <ToolOutput
+            //             output={undefined}
+            //             errorText={part.errorText}
+            //           />
+            //         )}
+            //         {state === 'output-available' && (
+            //           <ToolOutput
+            //             output={
+            //               'price' in (part.output || {}) ? (
+            //                 <Stock stockData={part.output as any} />
+            //               ) : (
+            //                 <div className="rounded border p-2 text-red-500 text-xs">
+            //                   {String(
+            //                     (part.output as any)?.error ||
+            //                       'Unable to fetch stock data',
+            //                   )}
+            //                 </div>
+            //               )
+            //             }
+            //             errorText={undefined}
+            //           />
+            //         )}
+            //       </ToolContent>
+            //     </Tool>
+            //   );
+            // }
           })}
 
           {!isReadonly && (

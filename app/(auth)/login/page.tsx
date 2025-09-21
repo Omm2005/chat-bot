@@ -2,12 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 
 export default function Page() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { update: updateSession } = useSession();
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

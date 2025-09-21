@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import type { Metadata } from 'next';
 
 import { Chat } from '@/components/chat';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
@@ -53,3 +54,22 @@ export default async function Page() {
     </>
   );
 }
+
+export const metadata: Metadata = {
+  title: 'New Chat',
+  description:
+    'Start a new conversation. Chat with AI, attach images or PDFs, and generate artifacts.',
+  openGraph: {
+    title: 'New Chat',
+    description:
+      'Start a new conversation. Chat with AI, attach images or PDFs, and generate artifacts.',
+    images: ['/images/demo-thumbnail.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'New Chat',
+    description:
+      'Start a new conversation. Chat with AI, attach images or PDFs, and generate artifacts.',
+    images: ['/images/demo-thumbnail.png'],
+  },
+};

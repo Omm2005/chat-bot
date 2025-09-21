@@ -6,10 +6,12 @@ import {
   saveDocument,
 } from '@/lib/db/queries';
 import { ChatSDKError } from '@/lib/errors';
+import { getChatById } from '@/lib/db/queries';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
+  const chatId = searchParams.get('chatId');
 
   if (!id) {
     return new ChatSDKError(
@@ -20,10 +22,6 @@ export async function GET(request: Request) {
 
   const session = await auth();
 
-  if (!session?.user) {
-    return new ChatSDKError('unauthorized:document').toResponse();
-  }
-
   const documents = await getDocumentsById({ id });
 
   const [document] = documents;
@@ -32,11 +30,21 @@ export async function GET(request: Request) {
     return new ChatSDKError('not_found:document').toResponse();
   }
 
-  if (document.userId !== session.user.id) {
-    return new ChatSDKError('forbidden:document').toResponse();
+  // Allow owner to access their documents
+  if (session?.user && document.userId === session.user.id) {
+    return Response.json(documents, { status: 200 });
   }
 
-  return Response.json(documents, { status: 200 });
+  // If not owner, allow read access when the associated chat is public
+  if (chatId) {
+    const chat = await getChatById({ id: chatId });
+    if (chat && chat.visibility === 'public') {
+      return Response.json(documents, { status: 200 });
+    }
+  }
+
+  // Otherwise, deny access
+  return new ChatSDKError('forbidden:document').toResponse();
 }
 
 export async function POST(request: Request) {

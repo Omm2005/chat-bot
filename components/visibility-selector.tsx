@@ -16,6 +16,8 @@ import {
   LockIcon,
 } from './icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { usePathname } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 export type VisibilityType = 'private' | 'public';
 
@@ -48,11 +50,11 @@ export function VisibilitySelector({
   selectedVisibilityType: VisibilityType;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
-
   const { visibilityType, setVisibilityType } = useChatVisibility({
     chatId,
     initialVisibilityType: selectedVisibilityType,
   });
+  const pathname = usePathname();
 
   const selectedVisibility = useMemo(
     () => visibilities.find((visibility) => visibility.id === visibilityType),
@@ -61,24 +63,29 @@ export function VisibilitySelector({
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
-        asChild
-        className={cn(
-          'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-          className,
-        )}
-      >
-        <Button
-          data-testid="visibility-selector"
-          variant="outline"
-          className="hidden h-8 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:flex md:h-fit md:px-2"
-        >
-          {selectedVisibility?.icon}
-          <span className="md:sr-only">{selectedVisibility?.label}</span>
-          <ChevronDownIcon />
-        </Button>
-      </DropdownMenuTrigger>
-
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger
+            asChild
+            className={cn(
+              'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+              className,
+            )}
+          >
+            <Button
+              data-testid="visibility-selector"
+              variant="outline"
+              disabled={pathname === '/'}
+              className="hidden h-8 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:flex md:h-fit md:px-2"
+            >
+              {selectedVisibility?.icon}
+              <span className="md:sr-only">{selectedVisibility?.label}</span>
+              <ChevronDownIcon />
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Change chat visibility</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent align="start" className="min-w-[300px]">
         {visibilities.map((visibility) => (
           <DropdownMenuItem
@@ -88,7 +95,7 @@ export function VisibilitySelector({
               setVisibilityType(visibility.id);
               setOpen(false);
             }}
-            className="group/item flex flex-row items-center justify-between gap-4"
+            className="group/item w-full cursor-pointer flex-row items-center justify-between gap-4"
             data-active={visibility.id === visibilityType}
           >
             <div className="flex flex-col items-start gap-1">

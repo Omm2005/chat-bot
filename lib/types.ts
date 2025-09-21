@@ -7,6 +7,7 @@ import type { InferUITool, UIMessage } from 'ai';
 import type { AppUsage } from './usage';
 import type { ArtifactKind } from '@/components/artifact';
 import type { Suggestion } from './db/schema';
+import type { StockData } from './ai/tools/getStock';
 // Note: Supermemory tool types are defined inline for UI compatibility.
 
 export type DataPart = { type: 'append-message'; message: string };
@@ -43,6 +44,11 @@ type searchMemoriesToolType = {
   };
 };
 
+type stockToolType = {
+  input: { symbol: string };
+  output: StockData | { error?: string };
+};
+
 export type ChatTools = {
   getWeather: weatherTool;
   createDocument: createDocumentTool;
@@ -50,6 +56,7 @@ export type ChatTools = {
   requestSuggestions: requestSuggestionsTool;
   addMemory: addMemoryToolType;
   searchMemories: searchMemoriesToolType;
+  stockTool: stockToolType;
 };
 
 export type CustomUIDataTypes = {

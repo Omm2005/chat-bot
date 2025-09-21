@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
+import type { Metadata } from 'next';
 
 import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
@@ -75,4 +76,44 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <DataStreamHandler />
     </>
   );
+}
+
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const params = await props.params;
+  const { id } = params;
+  try {
+    const chat = await getChatById({ id });
+    if (!chat) {
+      return {
+        title: 'Chat Not Found',
+        description: 'The requested chat could not be found.',
+      };
+    }
+    const title = chat.title ? `${chat.title}` : 'Chat';
+    const url = `${process.env.NEXT_PUBLIC_APP_URL || ''}/chat/${id}`;
+    return {
+      title,
+      description:
+        'Continue your conversation. Review messages, attachments, and artifacts.',
+      openGraph: {
+        title,
+        description:
+          'Continue your conversation. Review messages, attachments, and artifacts.',
+        url,
+        images: ['/images/demo-thumbnail.png'],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description:
+          'Continue your conversation. Review messages, attachments, and artifacts.',
+        images: ['/images/demo-thumbnail.png'],
+      },
+      alternates: { canonical: url },
+    };
+  } catch {
+    return { title: 'Chat', description: 'AI chat conversation.' };
+  }
 }

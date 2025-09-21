@@ -23,12 +23,14 @@ import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
 
 interface DocumentPreviewProps {
+  chatId: string;
   isReadonly: boolean;
   result?: any;
   args?: any;
 }
 
 export function DocumentPreview({
+  chatId,
   isReadonly,
   result,
   args,
@@ -37,7 +39,10 @@ export function DocumentPreview({
 
   const { data: documents, isLoading: isDocumentsFetching } = useSWR<
     Array<Document>
-  >(result ? `/api/document?id=${result.id}` : null, fetcher);
+  >(
+    result ? `/api/document?id=${result.id}&chatId=${chatId}` : null,
+    fetcher,
+  );
 
   const previewDocument = useMemo(() => documents?.[0], [documents]);
   const hitboxRef = useRef<HTMLDivElement>(null);

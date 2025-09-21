@@ -33,7 +33,7 @@ Do not update document right after creating it. Wait for user feedback or reques
 `;
 
 export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+  'You are a friendly assistant. Keep responses concise and helpful. Before answering or calling tools, first check prior context: 1) the current conversation, 2) user memories via searchMemories, 3) request hints (geo). Use memories to fill missing parameters (e.g., location, timezone, preferences) when appropriate.';
 
 const memoryPrompt = `
 Memory policy and tool usage:
@@ -41,6 +41,7 @@ Memory policy and tool usage:
 - Typical triggers: the user says "remember", "save this", or shares lasting preferences/facts (e.g., name, pronouns, writing style, shortcuts, favorite topics, tools, formats).
 - When appropriate, call addMemory with { memory: "<concise fact/preference>" }.
 - Confirm after saving without repeating sensitive content unless explicitly requested.
+Examples of good memories to save: "I live in San Jose", "My timezone is PST", "I prefer short answers".
 `;
 
 export interface RequestHints {
@@ -59,9 +60,14 @@ About the origin of user's request:
 `;
 
 const memorySearchGuidance = `
-Memory retrieval:
-- When helpful, search previously saved memories using searchMemories with { informationToGet, includeFullDocs, limit }.
-- Use concise queries and small limits (e.g., 3–10) unless more is justified.
+Memory retrieval first:
+- Before answering or invoking a tool, quickly search memories with searchMemories to retrieve missing parameters or user context.
+- Priority: current message > conversation state > memories > request hints (geo).
+- Use concise queries and small limits (3–8). Example queries:
+  - For weather/location needs: "home city", "I live in", "location", "timezone".
+  - For writing style/preferences: "prefer", "style", "format".
+- If a memory provides the needed parameter (e.g., user said "I live in San Jose"), use it directly for the tool call.
+- If not found, ask a brief follow-up to obtain the missing info before proceeding.
 `;
 
 export const systemPrompt = ({
@@ -72,6 +78,10 @@ export const systemPrompt = ({
   requestHints: RequestHints;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const toolParamGuidance = `
+Tool parameterization guide:
+- Weather: If the user asks about weather without a location, first search memories for home city/location/timezone. If found, use it. Otherwise, you may use request hints (city/country) as a fallback, or ask the user for their location.
+`;
 
   if (selectedChatModel === 'chat-model-reasoning') {
     const reasoningGuardrails = `
@@ -81,9 +91,9 @@ Reasoning visibility:
 - Do not reference that you used <think> or reveal the internal steps.
 `;
 
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${memoryPrompt}\n\n${memorySearchGuidance}\n\n${reasoningGuardrails}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${memoryPrompt}\n\n${memorySearchGuidance}\n\n${toolParamGuidance}\n\n${reasoningGuardrails}`;
   } else {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${memoryPrompt}\n\n${memorySearchGuidance}`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n${memoryPrompt}\n\n${memorySearchGuidance}\n\n${toolParamGuidance}`;
   }
 };
 

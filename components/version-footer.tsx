@@ -17,12 +17,14 @@ interface VersionFooterProps {
   handleVersionChange: (type: 'next' | 'prev' | 'toggle' | 'latest') => void;
   documents: Array<Document> | undefined;
   currentVersionIndex: number;
+  chatId: string;
 }
 
 export const VersionFooter = ({
   handleVersionChange,
   documents,
   currentVersionIndex,
+  chatId,
 }: VersionFooterProps) => {
   const { artifact } = useArtifact();
 
@@ -56,7 +58,7 @@ export const VersionFooter = ({
             setIsMutating(true);
 
             mutate(
-              `/api/document?id=${artifact.documentId}`,
+              `/api/document?id=${artifact.documentId}&chatId=${chatId}`,
               await fetch(
                 `/api/document?id=${artifact.documentId}&timestamp=${getDocumentTimestampByIndex(
                   documents,

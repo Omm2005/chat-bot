@@ -48,6 +48,7 @@ import {
   addMemoryTool,
   searchMemoriesTool,
 } from '@/lib/ai/tools/supermemory-tools';
+// import stockTool from '@/lib/ai/tools/getStock'; // temporarily disabled
 
 export const maxDuration = 60;
 
@@ -187,14 +188,8 @@ export async function POST(request: Request) {
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel, requestHints }),
           messages: convertToModelMessages(uiMessages),
-          stopWhen: stepCountIs(5),
+          stopWhen: stepCountIs(10),
           experimental_activeTools: (() => {
-            if (selectedChatModel === 'chat-model-reasoning') {
-              const base: ('addMemory' | 'searchMemories')[] = [];
-              if (userType !== 'guest')
-                base.push('addMemory', 'searchMemories');
-              return base;
-            }
             const base: (
               | 'getWeather'
               | 'createDocument'
@@ -229,6 +224,7 @@ export async function POST(request: Request) {
               process.env.SUPERMEMORY_API_KEY || '',
               { projectId: session.user.id },
             ),
+            // stockTool: stockTool, // temporarily disabled
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,

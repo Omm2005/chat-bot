@@ -93,7 +93,7 @@ function PureArtifact({
     mutate: mutateDocuments,
   } = useSWR<Array<Document>>(
     artifact.documentId !== 'init' && artifact.status !== 'streaming'
-      ? `/api/document?id=${artifact.documentId}`
+      ? `/api/document?id=${artifact.documentId}&chatId=${chatId}`
       : null,
     fetcher,
   );
@@ -131,7 +131,7 @@ function PureArtifact({
       if (!artifact) return;
 
       mutate<Array<Document>>(
-        `/api/document?id=${artifact.documentId}`,
+        `/api/document?id=${artifact.documentId}&chatId=${chatId}`,
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
@@ -167,7 +167,7 @@ function PureArtifact({
         { revalidate: false },
       );
     },
-    [artifact, mutate],
+    [artifact, mutate, chatId],
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
@@ -488,11 +488,12 @@ function PureArtifact({
 
             <AnimatePresence>
               {!isCurrentVersion && (
-                <VersionFooter
-                  currentVersionIndex={currentVersionIndex}
-                  documents={documents}
-                  handleVersionChange={handleVersionChange}
-                />
+              <VersionFooter
+                currentVersionIndex={currentVersionIndex}
+                documents={documents}
+                chatId={chatId}
+                handleVersionChange={handleVersionChange}
+              />
               )}
             </AnimatePresence>
           </motion.div>

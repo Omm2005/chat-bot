@@ -23,6 +23,7 @@ import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import type { AppUsage } from '@/lib/usage';
 import { useDataStream } from './data-stream-provider';
+import { useRouter } from 'next/navigation';
 
 export function Chat({
   id,
@@ -108,6 +109,7 @@ export function Chat({
 
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
+  const router = useRouter();
 
   const [hasAppendedQuery, setHasAppendedQuery] = useState(false);
 
@@ -119,7 +121,7 @@ export function Chat({
       });
 
       setHasAppendedQuery(true);
-      window.history.replaceState({}, '', `/chat/${id}`);
+      router.replace(`/chat/${id}`);
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
 

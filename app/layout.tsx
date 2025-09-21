@@ -2,14 +2,67 @@ import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Analytics } from '@vercel/analytics/next';
 
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Next.js Chatbot Template',
-  description: 'Next.js chatbot template using the AI SDK.',
+  metadataBase: new URL(appUrl),
+  applicationName: 'AI Chatbot',
+  title: {
+    default: 'AI Chatbot — Fast, Multimodal Chat',
+    template: '%s · AI Chatbot',
+  },
+  description:
+    'Conversational AI app with Gemini models, file attachments (images, PDFs), artifacts, and Supermemory.',
+  keywords: [
+    'AI chatbot',
+    'Next.js',
+    'Gemini',
+    'multimodal',
+    'Supermemory',
+    'AI SDK',
+  ],
+  authors: [{ name: 'AI Chatbot' }],
+  creator: 'AI Chatbot',
+  publisher: 'AI Chatbot',
+  openGraph: {
+    type: 'website',
+    url: appUrl,
+    title: 'AI Chatbot — Fast, Multimodal Chat',
+    description:
+      'Chat with AI, upload images and PDFs, create artifacts, and manage memories.',
+    siteName: 'AI Chatbot',
+    images: [
+      {
+        url: '/images/demo-thumbnail.png',
+        width: 1200,
+        height: 630,
+        alt: 'AI Chatbot Preview',
+      },
+    ],
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Chatbot — Fast, Multimodal Chat',
+    description:
+      'Chat with AI, upload images and PDFs, create artifacts, and manage memories.',
+    images: ['/images/demo-thumbnail.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: appUrl,
+  },
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export const viewport = {
@@ -63,7 +116,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -71,7 +124,10 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Toaster position="top-center" />
-          <SessionProvider>{children}</SessionProvider>
+          <SessionProvider>
+            <Analytics />
+            {children}
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>
